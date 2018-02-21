@@ -4,6 +4,7 @@ import yaml
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 import getpass
 import sys
 import argparse
@@ -30,20 +31,25 @@ if __name__ == "__main__":
     pswd = getpass.getpass("Password %s: " %(FROM["address"]))
     
     msg = MIMEMultipart()
-    msg["From"] = FROM["address"]
-    msg["To"] = TO["address"]
+    msg["From"] = FROM["username"]
+    msg["To"] = TO["username"]
     msg["Subject"] = "Results run %s"%(cmd.split(" ")[0])
-
 
     proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
-    body = "".join(map(chr, out))
+    with open("log.txt", "wb") as f:
+        f.write(out)
     if err == None:
-        body += "\nSuccess! Script exit with 0. For the output stream see the logfile."
+        msg.attach(MIMEText("Success! Script exit with 0. For the output stream see the logfile.", "plain"))
     else:
-        body += "\nSomethig goes wrong. Please see the logfile for more informations."
+        msg.attach(MIMEText("Somethig goes wrong. Please see the logfile for more informations."))
         
-    msg.attach(MIMEText(body, "plain"))
+    with open("log.txt", "rb") as f:
+        part = MIMEApplication(f.read(), Name="log.txt")
+
+    # After the file is closed
+    part['Content-Disposition'] = 'attachment; filename="log.txt"'
+    msg.attach(part)
     
     print("Send e-mail... ", end="")
     try:
