@@ -13,7 +13,7 @@ function smail
 
     while read -r line
     do
-        if echo "$line" | grep -q "$TO"; then add=true; fi;
+        if echo "$line" | grep -q "$TO:"; then add=true; fi;
         if $add; then
             key=$(echo $line | cut -d':' -f 1);
             key="$(echo -e "${key}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')" #trim string
@@ -26,7 +26,7 @@ function smail
 
     while read -r line
     do
-        if echo "$line" | grep -q "$FROM"; then add=true; fi;
+        if echo "$line" | grep -q "$FROM:"; then add=true; fi;
         if $add; then
             key=$(echo $line | cut -d':' -f 1);
             key="$(echo -e "${key}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')" #trim string
@@ -41,6 +41,7 @@ function smail
     
     echo -n "Password ${from_info["address"]}:" 
     read -s password;
+    echo
 
     myLog="./log.txt"
     msg="$($cmd > $myLog 2>&1)"
